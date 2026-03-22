@@ -1,18 +1,13 @@
 # TapTempo Blitz | Rhythm Mastery
 
-A hypercasual rhythm game where speed meets precision. This project uses Next.js, Genkit for AI-driven level generation, and integrates the Yandex Games SDK.
+A hypercasual rhythm game where speed meets precision. This project is built with Next.js and optimized for high-performance static builds, making it perfect for platforms like Yandex Games.
 
 ## Features
 
-- **Dynamic Level Generation**: Uses Google Gemini (via Genkit) to generate unique tap patterns based on difficulty.
+- **Procedural Level Generation**: Unique tap patterns generated on the client for smooth, serverless gameplay.
+- **Static Export Ready**: Fully compatible with `next export`. No Node.js server required at runtime.
 - **Responsive Gameplay**: Optimized for mobile portrait devices with a clean, modern UI using ShadCN and Tailwind CSS.
-- **Yandex Games Ready**: Pre-configured with Yandex Games SDK for leaderboards and player data.
-- **High Performance**: Built with the Next.js App Router for optimal speed.
-
-## Prerequisites
-
-- **Node.js**: Version 18.x or later.
-- **API Key**: A Google AI API Key is required for the GenAI level generation features.
+- **Yandex Games Ready**: Integrated with Yandex Games SDK for leaderboards and player data.
 
 ## Getting Started
 
@@ -21,70 +16,39 @@ A hypercasual rhythm game where speed meets precision. This project uses Next.js
    npm install
    ```
 
-2. **Configure Environment**:
-   Create a `.env` file in the root directory and add your Google AI API key:
-   ```env
-   GOOGLE_GENAI_API_KEY=your_api_key_here
-   ```
-
-3. **Run Development Server**:
+2. **Run Development Server**:
    ```bash
    npm run dev
    ```
    Access the game at `http://localhost:9002`.
 
-## Build Options
+## Building for Production
 
-### 1. Standard Production Build (Recommended)
-This build supports all features, including the Server Actions used for GenAI level generation. This is ideal for platforms like Vercel, Firebase App Hosting, or any Node.js environment.
+### Standard Next.js Build
+Ideal for hosting on Vercel or Firebase App Hosting.
+```bash
+npm run build
+npm run start
+```
 
-1. **Build**:
-   ```bash
-   npm run build
-   ```
-2. **Start**:
-   ```bash
-   npm run start
-   ```
+### Completely Static Export (HTML/CSS/JS)
+Use this for platforms that **do not support Node.js** (e.g., Yandex Games, GitHub Pages, S3).
 
-### 2. Completely Static Export (HTML/CSS/JS)
-Use this option if you are deploying to a platform that **does not support Node.js** (e.g., standard GitHub Pages, basic S3 bucket, or a ZIP-based static game portal).
-
-**⚠️ Important Note on AI Features:**
-Next.js Server Actions (like `generateTapPatterns`) and Genkit flows require a server environment. In a static export:
-- The AI level generation will **not work** out of the box because there is no server to run the logic.
-- You would need to host the Genkit logic as a separate cloud function or API and update `src/components/game/game-engine.tsx` to call that external API instead of the Server Action.
-
-**Steps to Export:**
-1. **Update Config**: Open `next.config.ts` and add `output: 'export'`:
+1. **Update Config**: In `next.config.ts`, ensure you have:
    ```ts
    const nextConfig: NextConfig = {
      output: 'export',
-     // ... other options
+     images: { unoptimized: true }
    };
    ```
-2. **Handle Images**: If you use `next/image`, you may need to disable the default optimization or use a custom loader since the optimization API requires a server.
-3. **Build**:
+2. **Build**:
    ```bash
    npm run build
    ```
-4. **Locate Files**: All static files will be generated in the `out/` directory. This folder contains the index.html and all assets needed for the game.
-
-## Deployment
-
-### Yandex Games Platform
-1. Create a static export (as described above).
-2. Zip the contents of the `out/` directory.
-3. Upload the ZIP to the Yandex Games Developer Console.
-4. Ensure the Yandex Games SDK script is properly loaded (pre-configured in `src/app/layout.tsx`).
-
-### Firebase App Hosting
-1. Ensure your repository is connected to Firebase App Hosting.
-2. Standard builds are handled automatically via the `apphosting.yaml` and the repository structure.
+3. **Zip and Upload**: The resulting `out/` directory contains all static files. Zip this folder for submission to game portals.
 
 ## Project Structure
 
-- `src/ai/`: Genkit flows and AI logic.
-- `src/components/game/`: Core game engine and UI components.
+- `src/lib/level-generator.ts`: The core logic for generating rhythmic patterns.
+- `src/components/game/`: Game engine, HUD, and interactive components.
 - `src/app/`: Next.js pages and layouts.
-- `public/`: Static assets.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { generateTapPatterns, type DynamicTapPatternGenerationOutput } from "@/ai/flows/dynamic-tap-pattern-generation";
+import { generateProceduralPatterns, type TapEvent } from "@/lib/level-generator";
 import { GameHUD } from "./game-hud";
 import { TapCue } from "./tap-cue";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ export function GameEngine() {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [level, setLevel] = useState(1);
-  const [patterns, setPatterns] = useState<DynamicTapPatternGenerationOutput['patterns']>([]);
+  const [patterns, setPatterns] = useState<TapEvent[]>([]);
   const [activeCues, setActiveCues] = useState<any[]>([]);
   const { toast } = useToast();
 
@@ -35,17 +35,14 @@ export function GameEngine() {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.YaGames) {
       window.YaGames.init().then((ysdk: any) => {
-        console.log('Yandex SDK initialized');
         window.ysdk = ysdk;
-        
-        // Example: Try to get player data if authorized
         ysdk.getPlayer().then((player: any) => {
           console.log('Player initialized', player.getName());
         }).catch((err: any) => {
-          console.log('Player not authorized or error', err);
+          console.log('Player not authorized', err);
         });
       }).catch((err: any) => {
-        console.error('Yandex SDK failed to initialize', err);
+        console.error('Yandex SDK failed', err);
       });
     }
   }, []);
@@ -59,35 +56,34 @@ export function GameEngine() {
     if (newScore > highScore) {
       setHighScore(newScore);
       localStorage.setItem('tap-tempo-highscore', newScore.toString());
-      
-      // Submit score to Yandex Leaderboard if available
       if (window.ysdk) {
         window.ysdk.getLeaderboards().then((lb: any) => {
           lb.setLeaderboardScore('top_scores', newScore);
-        }).catch((err: any) => {
-          console.log('Leaderboard not available', err);
-        });
+        }).catch((err: any) => console.log('LB Error', err));
       }
     }
   };
 
-  const loadLevel = async (lvl: number) => {
+  const loadLevel = (lvl: number) => {
     setGameState('loading');
-    try {
-      const result = await generateTapPatterns({
-        difficultyLevel: Math.min(lvl, 10),
-        durationSeconds: 30 + (lvl * 5)
-      });
-      setPatterns(result.patterns);
-      setGameState('playing');
-      patternIndexRef.current = 0;
-      gameTimeRef.current = 0;
-      startTimeRef.current = performance.now();
-      setActiveCues([]);
-    } catch (error) {
-      toast({ title: "Failed to load Blitz", variant: "destructive" });
-      setGameState('start');
-    }
+    // Simulate generation time for feel
+    setTimeout(() => {
+      try {
+        const result = generateProceduralPatterns(
+          Math.min(lvl, 10),
+          30 + (lvl * 2)
+        );
+        setPatterns(result.patterns);
+        setGameState('playing');
+        patternIndexRef.current = 0;
+        gameTimeRef.current = 0;
+        startTimeRef.current = performance.now();
+        setActiveCues([]);
+      } catch (error) {
+        toast({ title: "Failed to generate patterns", variant: "destructive" });
+        setGameState('start');
+      }
+    }, 800);
   };
 
   const gameLoop = useCallback((time: number) => {
@@ -108,8 +104,9 @@ export function GameEngine() {
 
     if (patternIndexRef.current >= patterns.length && activeCues.length === 0) {
       if (patterns.length > 0) {
-        setLevel(prev => prev + 1);
-        loadLevel(level + 1);
+        const nextLvl = level + 1;
+        setLevel(nextLvl);
+        loadLevel(nextLvl);
         return;
       }
     }
@@ -164,7 +161,7 @@ export function GameEngine() {
               TAPTEMPO <span className="text-primary">BLITZ</span>
             </h1>
             <p className="text-slate-500 font-medium max-w-xs mx-auto">
-              Tap the shapes in time with the rhythm. Don't miss a single beat.
+              Master the rhythm in this high-speed blitz. Optimized for static play.
             </p>
           </div>
           <Button 
@@ -181,7 +178,7 @@ export function GameEngine() {
       {gameState === 'loading' && (
         <div className="z-20 flex flex-col items-center gap-4 animate-pulse">
           <Zap className="w-16 h-16 text-primary animate-bounce" />
-          <span className="text-xl font-bold text-primary tracking-widest uppercase">Generating Level...</span>
+          <span className="text-xl font-bold text-primary tracking-widest uppercase">Preparing Sequence...</span>
         </div>
       )}
 
