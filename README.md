@@ -1,6 +1,6 @@
 # TapTempo Blitz | Rhythm Mastery
 
-A hypercasual rhythm game where speed meets precision. This project is built with Next.js and optimized for high-performance static builds.
+A hypercasual rhythm game where speed meets precision. This project is built with Next.js and optimized for high-performance static builds (HTML/CSS/JS), perfect for game portals like Yandex Games.
 
 ## Repository
 [https://github.com/egaborigen-cell/TAPTEMPO-BLITZ.git](https://github.com/egaborigen-cell/TAPTEMPO-BLITZ.git)
@@ -25,34 +25,20 @@ A hypercasual rhythm game where speed meets precision. This project is built wit
    ```
    Access the game at `http://localhost:9002`.
 
-## Building for Production
+## Building for Production (Static Export)
 
-### Standard Next.js Build
-Ideal for hosting on platforms like Vercel or Firebase App Hosting.
-```bash
-npm run build
-npm run start
-```
+To generate a completely static folder of HTML, CSS, and JS files (ideal for Yandex Games ZIP uploads):
 
-### Completely Static Export (HTML/CSS/JS)
-Use this for platforms that **do not support Node.js** (e.g., Yandex Games, GitHub Pages, S3).
-
-1. **Update Config**: In `next.config.ts`, ensure you have:
-   ```ts
-   const nextConfig: NextConfig = {
-     output: 'export',
-     images: { unoptimized: true }
-   };
-   ```
-2. **Build**:
+1. **Build**:
    ```bash
    npm run build
    ```
-3. **Zip and Upload**: The resulting `out/` directory contains all static files. Zip this folder for submission to game portals.
+2. **Result**: The static files will be generated in the `out/` directory.
+3. **Zip and Upload**: Zip the contents of the `out/` folder for submission to game portals.
 
 ## Pushing to GitHub
 
-To push your local changes to the repository, run the following commands in your terminal:
+To push your local changes to the repository:
 
 ```bash
 git init
