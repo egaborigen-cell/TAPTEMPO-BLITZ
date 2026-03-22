@@ -1,0 +1,11 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "game-background",
+      "description": "Abstract rhythmic pattern",
+      "imageUrl": "https://picsum.photos/seed/12/1200/800",
+      "imageHint": "abstract rhythm"
+    }
+  ]
+}
