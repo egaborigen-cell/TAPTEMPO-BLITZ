@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -10,6 +9,13 @@ import { RotateCcw, Play, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type GameState = 'start' | 'loading' | 'playing' | 'gameover';
+
+declare global {
+  interface Window {
+    YaGames?: any;
+    ysdk?: any;
+  }
+}
 
 export function GameEngine() {
   const [gameState, setGameState] = useState<GameState>('start');
@@ -25,6 +31,25 @@ export function GameEngine() {
   const patternIndexRef = useRef(0);
   const startTimeRef = useRef<number>(null);
 
+  // Yandex Games SDK Initialization
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.YaGames) {
+      window.YaGames.init().then((ysdk: any) => {
+        console.log('Yandex SDK initialized');
+        window.ysdk = ysdk;
+        
+        // Example: Try to get player data if authorized
+        ysdk.getPlayer().then((player: any) => {
+          console.log('Player initialized', player.getName());
+        }).catch((err: any) => {
+          console.log('Player not authorized or error', err);
+        });
+      }).catch((err: any) => {
+        console.error('Yandex SDK failed to initialize', err);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     const saved = localStorage.getItem('tap-tempo-highscore');
     if (saved) setHighScore(parseInt(saved));
@@ -34,16 +59,24 @@ export function GameEngine() {
     if (newScore > highScore) {
       setHighScore(newScore);
       localStorage.setItem('tap-tempo-highscore', newScore.toString());
+      
+      // Submit score to Yandex Leaderboard if available
+      if (window.ysdk) {
+        window.ysdk.getLeaderboards().then((lb: any) => {
+          lb.setLeaderboardScore('top_scores', newScore);
+        }).catch((err: any) => {
+          console.log('Leaderboard not available', err);
+        });
+      }
     }
   };
 
   const loadLevel = async (lvl: number) => {
     setGameState('loading');
     try {
-      // Adaptive parameter generation via GenAI
       const result = await generateTapPatterns({
         difficultyLevel: Math.min(lvl, 10),
-        durationSeconds: 30 + (lvl * 5) // Increase duration with level
+        durationSeconds: 30 + (lvl * 5)
       });
       setPatterns(result.patterns);
       setGameState('playing');
@@ -64,7 +97,6 @@ export function GameEngine() {
     const elapsed = time - startTimeRef.current;
     gameTimeRef.current = elapsed;
 
-    // Check if new patterns need to spawn
     while (
       patternIndexRef.current < patterns.length &&
       patterns[patternIndexRef.current].timeMs <= elapsed
@@ -74,9 +106,7 @@ export function GameEngine() {
       patternIndexRef.current++;
     }
 
-    // End condition
     if (patternIndexRef.current >= patterns.length && activeCues.length === 0) {
-      // Level completed
       if (patterns.length > 0) {
         setLevel(prev => prev + 1);
         loadLevel(level + 1);
@@ -101,12 +131,10 @@ export function GameEngine() {
   const handleTap = (id: number) => {
     setScore(prev => prev + (100 * level));
     setActiveCues(prev => prev.filter(c => c.id !== id));
-    // Visual feedback handled in component
   };
 
   const handleMiss = (id: number) => {
     setActiveCues(prev => prev.filter(c => c.id !== id));
-    // Game over on miss for hypercasual "Blitz" feel
     setGameState('gameover');
     saveHighScore(score);
   };
@@ -119,7 +147,6 @@ export function GameEngine() {
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden bg-background">
-      {/* Background Decor */}
       <div className="absolute inset-0 pointer-events-none opacity-5">
         <div className="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary via-accent to-transparent" />
       </div>
@@ -170,7 +197,7 @@ export function GameEngine() {
               visualHint={cue.visualHint}
               onTap={handleTap}
               onMiss={handleMiss}
-              lifetimeMs={1200 - (level * 50)} // Adaptive difficulty: less time as level increases
+              lifetimeMs={1200 - (level * 50)}
             />
           ))}
         </div>
