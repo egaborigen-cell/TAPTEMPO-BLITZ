@@ -1,6 +1,9 @@
 # TapTempo Blitz | Rhythm Mastery
 
-A hypercasual rhythm game where speed meets precision. This project is built with Next.js and optimized for high-performance static builds, making it perfect for platforms like Yandex Games.
+A hypercasual rhythm game where speed meets precision. This project is built with Next.js and optimized for high-performance static builds.
+
+## Repository
+[https://github.com/egaborigen-cell/TAPTEMPO-BLITZ.git](https://github.com/egaborigen-cell/TAPTEMPO-BLITZ.git)
 
 ## Features
 
@@ -25,7 +28,7 @@ A hypercasual rhythm game where speed meets precision. This project is built wit
 ## Building for Production
 
 ### Standard Next.js Build
-Ideal for hosting on Vercel or Firebase App Hosting.
+Ideal for hosting on platforms like Vercel or Firebase App Hosting.
 ```bash
 npm run build
 npm run start
@@ -47,8 +50,21 @@ Use this for platforms that **do not support Node.js** (e.g., Yandex Games, GitH
    ```
 3. **Zip and Upload**: The resulting `out/` directory contains all static files. Zip this folder for submission to game portals.
 
+## Pushing to GitHub
+
+To push your local changes to the repository, run the following commands in your terminal:
+
+```bash
+git init
+git remote add origin https://github.com/egaborigen-cell/TAPTEMPO-BLITZ.git
+git add .
+git commit -m "Initial commit of TapTempo Blitz"
+git branch -M main
+git push -u origin main
+```
+
 ## Project Structure
 
-- `src/lib/level-generator.ts`: The core logic for generating rhythmic patterns.
+- `src/lib/level-generator.ts`: The core logic for generating rhythmic patterns on the client.
 - `src/components/game/`: Game engine, HUD, and interactive components.
 - `src/app/`: Next.js pages and layouts.
