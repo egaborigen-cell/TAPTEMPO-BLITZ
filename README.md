@@ -33,44 +33,54 @@ A hypercasual rhythm game where speed meets precision. This project uses Next.js
    ```
    Access the game at `http://localhost:9002`.
 
-## Building for the Web
+## Build Options
 
-### Standard Build (Server-Side Support)
-Since this app uses Genkit and Server Actions for AI level generation, a standard Node.js environment is recommended for deployment (e.g., Firebase App Hosting, Vercel).
+### 1. Standard Production Build (Recommended)
+This build supports all features, including the Server Actions used for GenAI level generation. This is ideal for platforms like Vercel, Firebase App Hosting, or any Node.js environment.
 
-1. **Create Production Build**:
+1. **Build**:
    ```bash
    npm run build
    ```
-2. **Test Production Locally**:
+2. **Start**:
    ```bash
    npm run start
    ```
 
-### Static Export (Optional)
-If you require a completely static build (a folder of HTML/CSS/JS files) for platforms that do not support Node.js:
+### 2. Completely Static Export (HTML/CSS/JS)
+Use this option if you are deploying to a platform that **does not support Node.js** (e.g., standard GitHub Pages, basic S3 bucket, or a ZIP-based static game portal).
 
-1. **Note**: GenAI features (level generation) will fail in a static export because they rely on server-side logic. You would need to refactor the AI flows to call a remote API endpoint instead of using `'use server'`.
-2. **Update Config**: In `next.config.ts`, add `output: 'export'`.
-3. **Build**: Run `npm run build`.
-4. **Output**: The files will be generated in the `out/` directory.
+**⚠️ Important Note on AI Features:**
+Next.js Server Actions (like `generateTapPatterns`) and Genkit flows require a server environment. In a static export:
+- The AI level generation will **not work** out of the box because there is no server to run the logic.
+- You would need to host the Genkit logic as a separate cloud function or API and update `src/components/game/game-engine.tsx` to call that external API instead of the Server Action.
+
+**Steps to Export:**
+1. **Update Config**: Open `next.config.ts` and add `output: 'export'`:
+   ```ts
+   const nextConfig: NextConfig = {
+     output: 'export',
+     // ... other options
+   };
+   ```
+2. **Handle Images**: If you use `next/image`, you may need to disable the default optimization or use a custom loader since the optimization API requires a server.
+3. **Build**:
+   ```bash
+   npm run build
+   ```
+4. **Locate Files**: All static files will be generated in the `out/` directory. This folder contains the index.html and all assets needed for the game.
 
 ## Deployment
 
-### Firebase App Hosting (Recommended)
-This project is pre-configured for Firebase.
-
-1. Initialize Firebase in your project: `firebase init`.
-2. Select **App Hosting**.
-3. Connect your GitHub repository.
-4. Set the `GOOGLE_GENAI_API_KEY` in the Firebase Console under the App Hosting environment secrets.
-5. Push your code to deploy.
-
 ### Yandex Games Platform
-1. Ensure the Yandex Games SDK script is properly loaded (included in `src/app/layout.tsx`).
-2. Zip the contents of your build output.
+1. Create a static export (as described above).
+2. Zip the contents of the `out/` directory.
 3. Upload the ZIP to the Yandex Games Developer Console.
-4. If using a static ZIP, ensure all paths are relative or use a custom export configuration.
+4. Ensure the Yandex Games SDK script is properly loaded (pre-configured in `src/app/layout.tsx`).
+
+### Firebase App Hosting
+1. Ensure your repository is connected to Firebase App Hosting.
+2. Standard builds are handled automatically via the `apphosting.yaml` and the repository structure.
 
 ## Project Structure
 
